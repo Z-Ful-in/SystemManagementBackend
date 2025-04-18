@@ -1,3 +1,4 @@
+from django.contrib.messages.storage.cookie import MessageSerializer
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import UserImage
@@ -16,10 +17,13 @@ class RegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Username already exists')
         return value
 
+class ResponseMessageSerializer(serializers.ModelSerializer):
+    code = serializers.IntegerField()
+    message = serializers.CharField()
 
 class AuthResponseSerializer(serializers.Serializer):
-    username = serializers.BooleanField()
-    password = serializers.BooleanField()
+    success = serializers.BooleanField()
+    message = ResponseMessageSerializer()
 
 class UserImageSerializer(serializers.ModelSerializer):
     url = serializers.SerializerMethodField()

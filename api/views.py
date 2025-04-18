@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from api.serializers import RegisterSerializer
+from api.serializers import RegisterSerializer, AuthResponseSerializer
 
 
 # Create your views here.
@@ -16,18 +16,20 @@ def register_view(request):
     serialize = RegisterSerializer(data=request.data)
     if serialize.is_valid():
         User.objects.create_user(**serialize.validated_data)
-        return JsonResponse({
+        return JsonResponse(
+            AuthResponseSerializer({
             'success': True,
             'message':{
                 'message': 'registered successfully',
                 'code': 200
             }
-        })
+        }))
     else:
-        return  JsonResponse({
+        return  JsonResponse(
+            AuthResponseSerializer({
             'success': False,
             'message':{
                 'message': serialize.errors,
                 'code': 400
             }
-        })
+        }))
