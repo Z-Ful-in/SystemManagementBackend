@@ -93,8 +93,14 @@ def get_user_images(request, username):
     try:
         user = User.objects.get(username=username)
     except User.DoesNotExist:
-        return Response([])
+        return Response({
+            "success": False,
+            "data": []
+        })
 
     images = UserImage.objects.filter(user=user)
     serializer = UserImageSerializer(images, many=True, context={'request': request})
-    return Response(serializer.data)
+    return Response({
+        "success": True,
+        "data": serializer.data
+    })
