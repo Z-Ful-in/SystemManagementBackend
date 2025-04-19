@@ -1,3 +1,6 @@
+import os
+
+from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -104,3 +107,17 @@ def get_user_images(request, username):
         "success": True,
         "data": serializer.data
     })
+
+
+@api_view(['DELETE'])
+def delete_image(request, id):
+    try:
+        userImage= UserImage.objects.get(id=id)
+        if userImage.image.url.startswith(settings.MEDIA_URL):
+            file_path = os.path.join(settings.MEDIA_ROOT, userImage.image.url.replace(settings.MEDIA_URL, ""))
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+        userImage.delete()
+        return Response(True)
+    except UserImage.DoesNotExist:
+        return Response(False)
