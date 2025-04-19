@@ -6,18 +6,19 @@ from .models import UserImage
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('username', 'email', 'password')
+        fields = ('username', 'password')
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
+        return user
 
     def validate_username(self, value):
         if User.objects.filter(username=value).exists():
             raise serializers.ValidationError('Username already exists')
         return value
 
-class ResponseMessageSerializer(serializers.ModelSerializer):
+class ResponseMessageSerializer(serializers.Serializer):
     code = serializers.IntegerField()
     message = serializers.CharField()
 

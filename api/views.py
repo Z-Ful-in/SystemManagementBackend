@@ -2,17 +2,21 @@ from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.contrib.auth.models import User
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 
-from api.serializers import RegisterSerializer, AuthResponseSerializer
+from api.models import UserImage
+from api.serializers import RegisterSerializer, AuthResponseSerializer, UserImageSerializer
 
 
 # Create your views here.
 
-
+@csrf_exempt
 @api_view(['POST'])
+@authentication_classes([])
+@permission_classes([])
 def register_view(request):
     serialize = RegisterSerializer(data=request.data)
     if serialize.is_valid():
@@ -24,7 +28,7 @@ def register_view(request):
                 'message': 'registered successfully',
                 'code': 200
             }
-        }))
+        }).data)
     else:
         return  JsonResponse(
             AuthResponseSerializer({
@@ -33,10 +37,13 @@ def register_view(request):
                 'message': serialize.errors,
                 'code': 400
             }
-        }))
+        }).data)
 
 
+@csrf_exempt
 @api_view(['POST'])
+@authentication_classes([])
+@permission_classes([])
 def login_view(request):
     username = request.data.get('username')
     password = request.data.get('password')
@@ -50,7 +57,7 @@ def login_view(request):
                     'message': 'login successfully',
                     'code': 201
                 }
-            })
+            }).data
         )
     else:
         return JsonResponse(
@@ -60,11 +67,14 @@ def login_view(request):
                     'message': 'username or password is incorrect',
                     'code': 401
                 }
-            })
+            }).data
         )
 
 
+@csrf_exempt
 @api_view(['POST'])
+@authentication_classes([])
+@permission_classes([])
 def logout_view(request):
     logout(request)
     return JsonResponse(
@@ -74,5 +84,17 @@ def logout_view(request):
                 'message': 'logout successfully',
                 'code': 202
             }
-        })
+        }).data
     )
+
+
+@api_view(['GET'])
+def get_user_images(request, username):
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return Response([])
+
+    images = UserImage.objects.filter(user=user)
+    serializer = UserImageSerializer(images, many=True, context={'request': request})
+    return Response(serializer.data)
