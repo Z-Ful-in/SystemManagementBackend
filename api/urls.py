@@ -8,4 +8,5 @@ urlpatterns = [
 
     path('images/user/<str:username>', views.get_user_images, name='get_user_images'),
     path('images/<int:id>', views.delete_image, name='delete_image'),
+    path('images/upload_image', views.upload_image, name='upload_image'),
 ]

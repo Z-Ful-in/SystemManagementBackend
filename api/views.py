@@ -7,7 +7,8 @@ from django.shortcuts import render
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.decorators import api_view, authentication_classes, permission_classes, parser_classes
+from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 
 from api.models import UserImage
@@ -121,3 +122,23 @@ def delete_image(request, id):
         return Response(True)
     except UserImage.DoesNotExist:
         return Response(False)
+
+@csrf_exempt
+@api_view(['POST'])
+@authentication_classes([])
+@permission_classes([])
+@parser_classes([MultiPartParser])
+def upload_image(request):
+    image = request.FILES.get('image')
+    description = request.data.get('description')
+    username = request.data.get('username')
+
+    if not (image and description and username):
+        return Response(False)
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return Response(False)
+
+    UserImage.objects.create(user=user, description=description, image=image)
+    return Response(True)
