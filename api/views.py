@@ -3,10 +3,8 @@ import os
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse
-from django.shortcuts import render
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes, parser_classes
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
@@ -34,11 +32,12 @@ def register_view(request):
             }
         }).data)
     else:
+        error_message = serialize.errors.get('username', ['Unknown error'])[0]
         return  JsonResponse(
             AuthResponseSerializer({
             'success': False,
             'message':{
-                'message': serialize.errors,
+                'message': error_message,
                 'code': 400
             }
         }).data)
@@ -131,7 +130,7 @@ def delete_image(request, id):
 def upload_image(request):
     image = request.FILES.get('image')
     description = request.data.get('description')
-    username = request.data.get('username')
+    username = request.data.get('userName')
 
     if not (image and description and username):
         return Response(False)
