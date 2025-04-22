@@ -1,7 +1,9 @@
 import os
+from typing import Optional
 
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
+from django.core.files.uploadedfile import InMemoryUploadedFile, UploadedFile
 from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
@@ -138,6 +140,23 @@ def upload_image(request):
         user = User.objects.get(username=username)
     except User.DoesNotExist:
         return Response(False)
-
+    if not is_valid_image(image):
+        return Response(False)
     UserImage.objects.create(user=user, description=description, image=image)
     return Response(True)
+
+def is_valid_image(image: Optional[UploadedFile]) -> bool:
+    if image is None:
+        return False
+    if image.size > 5 * 1024 * 1024:  # 大于5MB
+        return False
+    if not image.name.lower().endswith(('.jpg', '.jpeg', '.png')):
+        return False
+    from PIL import Image
+    try:
+        img = Image.open(image)
+        if img.width < 300 or img.height < 300:
+            return False
+    except Exception:
+        return False
+    return True
