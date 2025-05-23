@@ -39,7 +39,7 @@ def register_view(request):
             AuthResponseSerializer({
             'success': False,
             'message':{
-                'message': error_message,
+                'message': "用户名已存在" if error_message else "发生错误",
                 'code': 400
             }
         }).data)
@@ -69,7 +69,7 @@ def login_view(request):
             AuthResponseSerializer({
                 'success': False,
                 'message':{
-                    'message': 'username or password is incorrect',
+                    'message': '用户名或密码错误',
                     'code': 401
                 }
             }).data
